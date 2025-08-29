@@ -1,0 +1,12 @@
+import { httpClient } from "@/services/axios";
+import type { User } from "./type";
+
+export const getUser = async () => {
+  const res = await httpClient.get<User>("/api/user");
+
+  return res.data;
+};
+
+export const logoutUser = async () => {
+  await httpClient.post("/logout");
+};
