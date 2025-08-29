@@ -8,6 +8,7 @@ import { toast } from "sonner";
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
+      console.log("global error", query);
       if (query.state.data !== undefined)
         toast.error(`Something went wrong: ${error.message}`, {
           action: {

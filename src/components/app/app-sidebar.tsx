@@ -8,21 +8,27 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { NavLink, useNavigate } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
 import {
+  ArrowUpRight,
   BadgeCheck,
   Bell,
   ChevronsUpDown,
+  Copy,
   Group as GroupIcon,
   LoaderCircle,
   LogOut,
+  MoreHorizontal,
   PhilippinePeso,
   Plus,
+  StarOff,
+  Trash2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -47,6 +53,19 @@ import { getUserQueryOptions } from "@/features/auth/query";
 import type { Group } from "@/features/groups/type";
 import { getGroupsQueryOptions } from "@/features/groups/query";
 import GroupCreateDialog from "./groups/create-dialog";
+import { toast } from "sonner";
+import { useDeleteGroup } from "@/features/groups/hooks/useDeleteGroup";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useUser();
@@ -63,6 +82,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <p className="font-medium">Cashmates</p>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SidebarGroup>
+            <SidebarMenuItem>
+              <GroupCreateDialog>
+                <SidebarMenuButton size={"lg"} className="border-dashed border">
+                  <Plus />
+                  Create new group
+                </SidebarMenuButton>
+              </GroupCreateDialog>
+            </SidebarMenuItem>
+          </SidebarGroup>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
@@ -70,17 +99,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Groups</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <GroupCreateDialog>
-                  <SidebarMenuButton
-                    size={"lg"}
-                    className="border-dashed border"
-                  >
-                    <Plus />
-                    Create new group
-                  </SidebarMenuButton>
-                </GroupCreateDialog>
-              </SidebarMenuItem>
               <GroupItem groups={groups} />
             </SidebarMenu>
           </SidebarGroupContent>
@@ -99,6 +117,7 @@ function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
   const { mutate: logout, isPending: isLoggingOut } = useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
@@ -171,6 +190,20 @@ function NavUser({ user }: { user: User }) {
 }
 
 function GroupItem({ groups }: { groups: Group[] }) {
+  const { isMobile } = useSidebar();
+  const mutateDeleteGroup = useDeleteGroup();
+
+  const handleCopyToClipboard = async (group: Group) => {
+    try {
+      await navigator.clipboard.writeText(group.join_code);
+      toast.success("Invitation code copied to clipboard!");
+    } catch (error) {
+      toast.error("Failed to copy invitation code. Please try again.", {
+        description: (error as Error).message,
+      });
+    }
+  };
+
   if (!groups.length)
     return (
       <SidebarGroup className="space-y-2">
@@ -192,6 +225,67 @@ function GroupItem({ groups }: { groups: Group[] }) {
           </SidebarMenuButton>
         )}
       </NavLink>
+      <Dialog>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuAction showOnHover>
+              <MoreHorizontal />
+              <span className="sr-only">More</span>
+            </SidebarMenuAction>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-56 rounded-lg"
+            side={isMobile ? "bottom" : "right"}
+            align={isMobile ? "end" : "start"}
+          >
+            <DropdownMenuItem>
+              <StarOff className="text-muted-foreground" />
+              <span>Remove from Favorites</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => handleCopyToClipboard(group)}>
+              <Copy className="text-muted-foreground" />
+              <span>Copy invitation code</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to={`groups/${group.id}`} target="_blank" rel="noreferrer">
+                <ArrowUpRight className="text-muted-foreground" />
+                <span>Open in New Tab</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DialogTrigger asChild>
+              <DropdownMenuItem className="text-destructive focus-visible:text-destructive">
+                <Trash2 className="text-destructive" />
+                <span>Delete</span>
+              </DropdownMenuItem>
+            </DialogTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>You're about to delete this group</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. Are you sure?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button
+                variant="destructive"
+                onClick={() => mutateDeleteGroup(group.id)}
+              >
+                <Trash2 />
+                Yes, delete it
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button variant="secondary">Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarMenuItem>
   ));
 }

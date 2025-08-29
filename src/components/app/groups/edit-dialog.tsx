@@ -6,39 +6,43 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState, type PropsWithChildren } from "react";
 import GroupForm from "./form";
+import { useState, type PropsWithChildren } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createGroup } from "@/features/groups/api";
+import { updateGroup } from "@/features/groups/api";
+import type { Group, UpdateGroupPayload } from "@/features/groups/type";
 import { getGroupsQueryOptions } from "@/features/groups/query";
 import { toast } from "sonner";
-import GroupInvitationDialog from "./invitation-dialog";
-import { Button } from "@/components/ui/button";
 
-type Props = PropsWithChildren;
+type Props = PropsWithChildren & {
+  group: Group;
+};
 
-function GroupCreateDialog({ children }: Props) {
+function GroupEditDialog({ children, group }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
 
   const queryClient = useQueryClient();
-  const { mutate: mutateCreateGroup } = useMutation({
-    mutationFn: createGroup,
+  const groups = queryClient.getQueryData(getGroupsQueryOptions().queryKey);
+  const selectedGroup = groups?.find((g) => group.id === g.id);
+  const { mutate: mutateUpdateGroup } = useMutation({
+    mutationFn: ({
+      groupId,
+      payload,
+    }: {
+      groupId: number;
+      payload: UpdateGroupPayload;
+    }) => updateGroup(groupId, payload),
     onMutate: () => {
       setOpenDialog(false);
     },
-    onSuccess: (group) => {
+    onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries(getGroupsQueryOptions());
-      toast.success("Group created successfully", {
-        description: "Start inviting members to your group now!",
-        action: (
-          <GroupInvitationDialog group={group} onClose={() => toast.dismiss()}>
-            <Button size={"sm"}>Invite</Button>
-          </GroupInvitationDialog>
-        ),
-      });
+      toast.success("Group updated successfully");
     },
   });
+
+  if (!group) return null;
   return (
     <Dialog open={openDialog} onOpenChange={setOpenDialog}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -49,10 +53,15 @@ function GroupCreateDialog({ children }: Props) {
             Fill out the form to create a new group
           </DialogDescription>
         </DialogHeader>
-        <GroupForm defaultValues={{ name: "" }} onSubmit={mutateCreateGroup} />
+        <GroupForm
+          defaultValues={{ name: selectedGroup?.name || "" }}
+          onSubmit={(payload) =>
+            mutateUpdateGroup({ groupId: group.id, payload })
+          }
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
-export default GroupCreateDialog;
+export default GroupEditDialog;

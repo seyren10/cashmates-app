@@ -18,5 +18,5 @@ export type Group = WithTimestamp & {
 };
 
 export type GroupSchema = z.infer<typeof groupSchema>;
-export type CreateGroupSchema = GroupSchema;
-export type UpdateGroupSchema = Partial<GroupSchema>;
+export type CreateGroupPayload = GroupSchema;
+export type UpdateGroupPayload = Partial<GroupSchema>;
