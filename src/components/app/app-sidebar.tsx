@@ -18,9 +18,11 @@ import {
   BadgeCheck,
   Bell,
   ChevronsUpDown,
+  Group as GroupIcon,
   LoaderCircle,
   LogOut,
   PhilippinePeso,
+  Plus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -34,24 +36,21 @@ import {
 import { useUser } from "@/features/auth/hooks/useUser";
 import type { User } from "@/features/auth/type";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { logoutUser } from "@/features/auth/api";
 import AppButtonLoaderSwap from "./app-button-loader-swap";
 import { getUserQueryOptions } from "@/features/auth/query";
+import type { Group } from "@/features/groups/type";
+import { getGroupsQueryOptions } from "@/features/groups/query";
+import GroupCreateDialog from "./groups/create-dialog";
 
-export type AppSidebarRoute = {
-  title: string;
-  items: {
-    title: string;
-    url: string;
-    icon?: React.ComponentType<React.SVGAttributes<SVGElement>>;
-  }[];
-};
-export function AppSidebar({
-  items,
-  ...props
-}: React.ComponentProps<typeof Sidebar> & { items: AppSidebarRoute[] }) {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useUser();
+  const { data: groups } = useSuspenseQuery(getGroupsQueryOptions());
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -67,33 +66,25 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {items.map((item) => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <NavLink to={item.url} end>
-                      {({ isActive, isPending }) => (
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          tooltip={item.title}
-                        >
-                          {isPending && (
-                            <LoaderCircle className="size-4 animate-spin" />
-                          )}
-                          {!!item.icon && <item.icon />}
-                          {item.title}
-                        </SidebarMenuButton>
-                      )}
-                    </NavLink>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        <SidebarGroup>
+          <SidebarGroupLabel>Groups</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <GroupCreateDialog>
+                  <SidebarMenuButton
+                    size={"lg"}
+                    className="border-dashed border"
+                  >
+                    <Plus />
+                    Create new group
+                  </SidebarMenuButton>
+                </GroupCreateDialog>
+              </SidebarMenuItem>
+              <GroupItem groups={groups} />
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
@@ -177,4 +168,30 @@ function NavUser({ user }: { user: User }) {
       </SidebarMenuItem>
     </SidebarMenu>
   );
+}
+
+function GroupItem({ groups }: { groups: Group[] }) {
+  if (!groups.length)
+    return (
+      <SidebarGroup className="space-y-2">
+        <p className="text-xs text-muted-foreground">
+          You don't have any groups yet. Create a new group by clicking the
+          button above to get started.
+        </p>
+      </SidebarGroup>
+    );
+
+  return groups.map((group) => (
+    <SidebarMenuItem key={group.name}>
+      <NavLink to={`groups/${group.id}`} end>
+        {({ isActive, isPending }) => (
+          <SidebarMenuButton isActive={isActive} tooltip={group.name}>
+            {isPending && <LoaderCircle className="size-4 animate-spin" />}
+            <GroupIcon />
+            {group.name}
+          </SidebarMenuButton>
+        )}
+      </NavLink>
+    </SidebarMenuItem>
+  ));
 }

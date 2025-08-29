@@ -1,11 +1,4 @@
-import {
-  Building2,
-  CheckCircle,
-  Clock,
-  OctagonX,
-  Users,
-  Users2,
-} from "lucide-react";
+import { CheckCircle, OctagonX, Users2 } from "lucide-react";
 import { AppSidebar } from "./components/app/app-sidebar";
 import {
   SidebarInset,
@@ -19,21 +12,10 @@ import { Toaster } from "sonner";
 import { Button } from "./components/ui/button";
 import { cn } from "./lib/utils";
 
-const navigation = [
-  {
-    title: "Groups",
-    items: [
-      { title: "My groups", url: "/employees", icon: Users },
-      { title: "Departments", url: "/departments", icon: Building2 },
-      { title: "Schedules", url: "/schedules", icon: Clock },
-    ],
-  },
-];
-
 export const Layout = () => {
   return (
     <SidebarProvider>
-      <AppSidebar variant="inset" items={navigation} />
+      <AppSidebar variant="inset" />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <CustomSidebarToggler />
