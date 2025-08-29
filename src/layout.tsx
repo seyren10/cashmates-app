@@ -14,7 +14,7 @@ import { cn } from "./lib/utils";
 
 export const Layout = () => {
   return (
-    <SidebarProvider>
+    <SidebarProvider >
       <AppSidebar variant="inset" />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">

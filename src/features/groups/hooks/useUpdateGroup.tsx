@@ -1,13 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteGroup } from "../api";
+import { updateGroup } from "../api";
 import { getGroupsQueryOptions } from "../query";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
+import type { UpdateGroupPayload } from "../type";
 
-export const useDeleteGroup = () => {
+export const useUpdateGroup = () => {
   const queryClient = useQueryClient();
   const { mutate: mutateDeleteGroup, isPending } = useMutation({
-    mutationFn: deleteGroup,
+    mutationFn: ({
+      groupId,
+      payload,
+    }: {
+      groupId: number;
+      payload: UpdateGroupPayload;
+    }) => updateGroup(groupId, payload),
     onSuccess: () => {
       return queryClient.invalidateQueries(getGroupsQueryOptions());
     },
@@ -19,11 +26,6 @@ export const useDeleteGroup = () => {
           onClick: () => mutateDeleteGroup(groupId),
         },
       });
-    },
-    onSettled: (_, error) => {
-      if (!error) {
-        toast.info("Group successfully deleted");
-      }
     },
   });
 

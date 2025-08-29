@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +20,7 @@ import {
   Bell,
   ChevronsUpDown,
   Copy,
+  Edit,
   Group as GroupIcon,
   LoaderCircle,
   LogOut,
@@ -66,6 +66,15 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type PropsWithChildren,
+} from "react";
+import { Input } from "../ui/input";
+import { useUpdateGroup } from "@/features/groups/hooks/useUpdateGroup";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useUser();
@@ -99,7 +108,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Groups</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <GroupItem groups={groups} />
+              <GroupSidebarGroup groups={groups}>
+                {groups.map((group) => (
+                  <GroupSidebarItem key={group.id} group={group} />
+                ))}
+              </GroupSidebarGroup>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -189,9 +202,33 @@ function NavUser({ user }: { user: User }) {
   );
 }
 
-function GroupItem({ groups }: { groups: Group[] }) {
+function GroupSidebarGroup({
+  groups,
+  children,
+}: {
+  groups: Group[];
+} & PropsWithChildren) {
+  if (!groups.length)
+    return (
+      <SidebarGroup className="space-y-2">
+        <p className="text-xs text-muted-foreground">
+          You don't have any groups yet. Create a new group by clicking the
+          button above to get started.
+        </p>
+      </SidebarGroup>
+    );
+
+  return children;
+}
+
+function GroupSidebarItem({ group }: { group: Group }) {
+  const [editing, setEditing] = useState(false);
+  const [groupNameEdit, setGroupNameEdit] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const { isMobile } = useSidebar();
-  const mutateDeleteGroup = useDeleteGroup();
+  const [mutateDeleteGroup] = useDeleteGroup();
+  const [mutateUpdateGroup, isUpdating] = useUpdateGroup();
 
   const handleCopyToClipboard = async (group: Group) => {
     try {
@@ -204,45 +241,90 @@ function GroupItem({ groups }: { groups: Group[] }) {
     }
   };
 
-  if (!groups.length)
-    return (
-      <SidebarGroup className="space-y-2">
-        <p className="text-xs text-muted-foreground">
-          You don't have any groups yet. Create a new group by clicking the
-          button above to get started.
-        </p>
-      </SidebarGroup>
-    );
+  useEffect(() => {
+    if (!editing) return;
 
-  return groups.map((group) => (
-    <SidebarMenuItem key={group.name}>
-      <NavLink to={`groups/${group.id}`} end>
-        {({ isActive, isPending }) => (
-          <SidebarMenuButton isActive={isActive} tooltip={group.name}>
-            {isPending && <LoaderCircle className="size-4 animate-spin" />}
-            <GroupIcon />
-            {group.name}
-          </SidebarMenuButton>
-        )}
-      </NavLink>
+    const id = requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.focus({ preventScroll: true });
+      el.select();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [editing]);
+
+  const handleStartEditing = () => {
+    setEditing(true);
+    setGroupNameEdit(group.name);
+  };
+
+  const handleStopEditing = () => {
+    setEditing(false);
+    setGroupNameEdit("");
+  };
+
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      mutateUpdateGroup(
+        {
+          groupId: group.id,
+          payload: { name: groupNameEdit },
+        },
+        {
+          onSuccess: () => handleStopEditing(),
+        }
+      );
+    } else if (e.key === "Escape") handleStopEditing();
+  };
+
+  return (
+    <SidebarMenuItem>
+      {!editing ? (
+        <NavLink to={`groups/${group.id}`} end>
+          {({ isActive, isPending }) => (
+            <SidebarMenuButton isActive={isActive} tooltip={group.name}>
+              {isPending && <LoaderCircle className="size-4 animate-spin" />}
+              <GroupIcon />
+              {group.name}
+            </SidebarMenuButton>
+          )}
+        </NavLink>
+      ) : (
+        <Input
+          value={groupNameEdit}
+          ref={inputRef}
+          onBlur={() => handleStopEditing()}
+          onKeyDown={handleKeyPress}
+          onChange={(e) => setGroupNameEdit(e.target.value)}
+          disabled={isUpdating}
+          className="text-sm"
+        />
+      )}
       <Dialog>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuAction showOnHover>
-              <MoreHorizontal />
-              <span className="sr-only">More</span>
-            </SidebarMenuAction>
+            {!editing && (
+              <SidebarMenuAction showOnHover>
+                <MoreHorizontal />
+                <span className="sr-only">More</span>
+              </SidebarMenuAction>
+            )}
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align={isMobile ? "end" : "start"}
+            onCloseAutoFocus={(e) => e.preventDefault()}
           >
             <DropdownMenuItem>
               <StarOff className="text-muted-foreground" />
               <span>Remove from Favorites</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => handleStartEditing()}>
+              <Edit className="text-muted-foreground" />
+              <span>Edit</span>
+            </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => handleCopyToClipboard(group)}>
               <Copy className="text-muted-foreground" />
               <span>Copy invitation code</span>
@@ -287,5 +369,5 @@ function GroupItem({ groups }: { groups: Group[] }) {
         </DialogContent>
       </Dialog>
     </SidebarMenuItem>
-  ));
+  );
 }
