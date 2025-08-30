@@ -1,4 +1,6 @@
-import type { userRole } from "./schema";
+import type z from "zod";
+import type { loginCredentialSchema, userRole } from "./schema";
+import type { AxiosError } from "axios";
 
 export type User = {
   id: number;
@@ -10,3 +12,7 @@ export type User = {
 };
 
 export type UserRole = (typeof userRole)[number];
+
+export type LoginCredential = z.infer<typeof loginCredentialSchema>;
+
+export type LaravelError = AxiosError<{ message: string }>;

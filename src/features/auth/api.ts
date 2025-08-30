@@ -1,5 +1,5 @@
 import { httpClient } from "@/services/axios";
-import type { User } from "./type";
+import type { LoginCredential, User } from "./type";
 
 export const getUser = async () => {
   const res = await httpClient.get<User>("/api/user");
@@ -9,4 +9,8 @@ export const getUser = async () => {
 
 export const logoutUser = async () => {
   await httpClient.post("/logout");
+};
+
+export const login = async (credentials: LoginCredential) => {
+  await httpClient.post("/login", credentials);
 };
