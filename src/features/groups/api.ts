@@ -1,10 +1,15 @@
 import { httpClient } from "@/services/axios";
-import type { CreateGroupPayload, Group, UpdateGroupPayload } from "./type";
+import type { CreateGroupPayload, Group, GroupShow, UpdateGroupPayload } from "./type";
 
 export const getGroups = async () => {
   const res = await httpClient.get<Group[]>("/api/groups");
   return res.data;
 };
+
+export const getGroup = async (groupId: number) => {
+  const res = await httpClient.get<GroupShow>(`/api/groups/${groupId}`);
+  return res.data;
+}
 
 export const createGroup = async (payload: CreateGroupPayload) => {
   const res = await httpClient.post<Group>("/api/groups", payload);

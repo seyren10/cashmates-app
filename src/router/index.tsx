@@ -2,6 +2,7 @@ import { Layout } from "@/layout";
 import Login from "@/pages/auth/login";
 import { createBrowserRouter } from "react-router";
 import { mainLoader } from "./loaders/main";
+import { groupRoutes } from "./groups";
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
           Component: async () => (await import("@/pages/dashboard")).default,
         },
       },
+      groupRoutes
     ],
   },
   {

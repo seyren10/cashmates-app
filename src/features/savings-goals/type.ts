@@ -1,4 +1,5 @@
 import type { WithTimestamp } from "@/types/common";
+import type { Group } from "../groups/type";
 
 export type SavingsGoal = WithTimestamp & {
   id: number;
@@ -8,4 +9,10 @@ export type SavingsGoal = WithTimestamp & {
   deadline: null | string;
   deleted_at: string;
   current_balance: number;
+};
+
+export type SavingsGoalShow = SavingsGoal & {
+  group: Group;
+  contributions_count: number;
+  expenses_count: number;
 };

@@ -280,12 +280,12 @@ function GroupSidebarItem({ group }: { group: Group }) {
   return (
     <SidebarMenuItem>
       {!editing ? (
-        <NavLink to={`groups/${group.id}`} end>
+        <NavLink to={`groups/${group.id}`}>
           {({ isActive, isPending }) => (
             <SidebarMenuButton isActive={isActive} tooltip={group.name}>
               {isPending && <LoaderCircle className="size-4 animate-spin" />}
               <GroupIcon />
-              {group.name}
+              <span>{group.name}</span>
             </SidebarMenuButton>
           )}
         </NavLink>

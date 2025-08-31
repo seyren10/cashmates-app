@@ -11,10 +11,11 @@ import { Outlet, ScrollRestoration } from "react-router";
 import { Toaster } from "sonner";
 import { Button } from "./components/ui/button";
 import { cn } from "./lib/utils";
+import AppLayoutHeader from "./components/app/app-layout-header";
 
 export const Layout = () => {
   return (
-    <SidebarProvider >
+    <SidebarProvider>
       <AppSidebar variant="inset" />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
@@ -23,7 +24,7 @@ export const Layout = () => {
             orientation="vertical"
             className="mr-2 data-[orientation=vertical]:h-4"
           />
-          <p className="text-sm">My Group</p>
+          <AppLayoutHeader />
           <div className="ml-auto">
             <ModeToggle />
           </div>
