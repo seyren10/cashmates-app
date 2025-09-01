@@ -6,7 +6,7 @@ function GroupShowPageIndex() {
   const group = useGroup();
   const { savings_goals } = group;
   const savingsGoalMatches = useMatch(
-    "/groups/:groupId/savings-goals/:savingsGoalId"
+    "/groups/:groupId/savings-goals/:savingsGoalId/*"
   );
   return (
     <div className="space-y-4">

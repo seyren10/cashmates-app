@@ -2,7 +2,7 @@ import { useSavingsGoal } from "@/features/savings-goals/hooks/useSavingsGoal";
 import GroupSavingsGoalCard from "../../components/savings-goal-card";
 import GroupSavingsGoalProgressCard from "../../components/savings-goal-progress-card";
 import GroupSavingsGoalTabs from "../../components/savings-goal-tabs";
-
+import { Outlet } from "react-router";
 
 function SavingsGoalShow() {
   const savingsGoal = useSavingsGoal();
@@ -11,6 +11,7 @@ function SavingsGoalShow() {
       <GroupSavingsGoalCard savingsGoal={savingsGoal} />
       <GroupSavingsGoalProgressCard savingsGoal={savingsGoal} />
       <GroupSavingsGoalTabs />
+      <Outlet />
     </section>
   );
 }

@@ -7,7 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSavingsGoal } from "@/features/savings-goals/hooks/useSavingsGoal";
 import type { getSavingsGoalLoader } from "@/features/savings-goals/loaders";
 import type { SavingsGoal } from "@/features/savings-goals/type";
 import { Goal } from "lucide-react";
@@ -31,7 +30,10 @@ function GroupSavingsGoalSelect({ savingsGoals }: Props) {
       <Label htmlFor="savings-goals" className="sr-only">
         Select Savings goal
       </Label>
-      <Select defaultValue={String(savingsGoalId)}>
+      <Select
+        defaultValue={String(savingsGoalId)}
+        onValueChange={(value) => navigate(`savings-goals/${value}`)}
+      >
         <SelectTrigger className="w-full md:w-auto" disabled={isNavigating}>
           <AppButtonLoaderSwap loading={isNavigating}>
             <Goal />
@@ -40,11 +42,7 @@ function GroupSavingsGoalSelect({ savingsGoals }: Props) {
         </SelectTrigger>
         <SelectContent>
           {savingsGoals.map((savingsGoal) => (
-            <SelectItem
-              value={String(savingsGoal.id)}
-              key={savingsGoal.id}
-              onClick={() => navigate(`savings-goals/${savingsGoal.id}`)}
-            >
+            <SelectItem value={String(savingsGoal.id)} key={savingsGoal.id}>
               {savingsGoal.name}
             </SelectItem>
           ))}

@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router";
+import { contributionRoutes } from "./contributions";
 
 export const savingsGoalRoutes: RouteObject = {
   path: "savings-goals",
@@ -10,16 +11,10 @@ export const savingsGoalRoutes: RouteObject = {
         loader: async () =>
           (await import("@/features/savings-goals/loaders"))
             .getSavingsGoalLoader,
+        Component: async () =>
+          (await import("@/pages/groups/savings-goals/show")).default,
       },
-      children: [
-        {
-          index: true,
-          lazy: {
-            Component: async () =>
-              (await import("@/pages/groups/savings-goals/show")).default,
-          },
-        },
-      ],
+      children: [contributionRoutes],
     },
   ],
 };

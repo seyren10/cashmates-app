@@ -1,4 +1,5 @@
 import type { WithTimestamp } from "@/types/common";
+import type { User } from "../auth/type";
 
 export type Contribution = WithTimestamp & {
   id: number;
@@ -7,4 +8,6 @@ export type Contribution = WithTimestamp & {
   amount: number;
   note?: string;
   deleted_at: null | string;
+  comments_count: number;
+  user: User;
 };

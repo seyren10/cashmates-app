@@ -189,7 +189,12 @@ function NavUser({ user }: { user: User }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => logout()}>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                logout();
+              }}
+            >
               <AppButtonLoaderSwap loading={isLoggingOut}>
                 <LogOut />
               </AppButtonLoaderSwap>

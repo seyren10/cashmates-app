@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteGroup } from "../api";
-import { getGroupsQueryOptions } from "../query";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
 
@@ -9,7 +8,9 @@ export const useDeleteGroup = () => {
   const { mutate: mutateDeleteGroup, isPending } = useMutation({
     mutationFn: deleteGroup,
     onSuccess: () => {
-      return queryClient.invalidateQueries(getGroupsQueryOptions());
+      return queryClient.invalidateQueries({
+        queryKey: ["groups"],
+      });
     },
     onError: (error, groupId) => {
       toast.error("Something went wrong", {

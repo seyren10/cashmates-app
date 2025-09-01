@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateGroup } from "../api";
-import { getGroupsQueryOptions } from "../query";
 import { toast } from "sonner";
 import type { AxiosError } from "axios";
 import type { UpdateGroupPayload } from "../type";
@@ -16,7 +15,9 @@ export const useUpdateGroup = () => {
       payload: UpdateGroupPayload;
     }) => updateGroup(groupId, payload),
     onSuccess: () => {
-      return queryClient.invalidateQueries(getGroupsQueryOptions());
+      return queryClient.invalidateQueries({
+        queryKey: ["groups"],
+      });
     },
     onError: (error, groupId) => {
       toast.error("Something went wrong", {
