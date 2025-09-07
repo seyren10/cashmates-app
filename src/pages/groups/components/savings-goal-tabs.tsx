@@ -28,7 +28,7 @@ function GroupSavingsGoalTabs() {
             )}
           </NavLink>
         </TabsTrigger>
-        <TabsTrigger value="expenses">
+        <TabsTrigger value="expenses" asChild>
           <NavLink to={"expenses"} end>
             {({ isPending }) => (
               <>
